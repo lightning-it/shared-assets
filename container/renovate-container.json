@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "_comment": "Container image-specific Renovate config.",
+  "extends": ["config:recommended"],
+  "dependencyDashboard": true,
+  "timezone": "UTC",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies", "renovate"],
+  "packageRules": [
+    { "matchManagers": ["dockerfile", "docker-compose"], "groupName": "Docker images" }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^Dockerfile(\\.template)?$", "^\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": [
+        "(?<depName>ghcr\\.io/[^:\\s]+):(?<currentValue>[\\w.-]+)"
+      ]
+    }
+  ]
+}

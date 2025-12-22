@@ -1,0 +1,28 @@
+---
+repos:
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint
+        name: hadolint
+        files: ^Dockerfile(\.template)?$
+  - repo: local
+    hooks:
+      - id: github-actions-lint
+        name: GitHub Actions workflow linting (actionlint)
+        language: system
+        entry: >-
+          bash -lc 'docker run --rm -v "$PWD":/repo
+          -w /repo docker.io/rhysd/actionlint:latest'
+        pass_filenames: false
+        files: ^\.github/workflows/.*\.ya?ml$
+      - id: renovate-config-validate
+        name: renovate config linting (renovate-config-validator)
+        language: system
+        pass_filenames: false
+        files: ^renovate-container\.json$
+        entry: >-
+          bash -lc 'docker run --rm
+          -v "$PWD":/repo -w /repo
+          renovate/renovate:latest
+          renovate-config-validator'
