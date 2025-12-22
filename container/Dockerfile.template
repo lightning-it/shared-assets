@@ -1,0 +1,13 @@
+FROM {{PLACEHOLDER_BASE_IMAGE}}:{{PLACEHOLDER_TAG}}
+
+LABEL org.opencontainers.image.source="{{PLACEHOLDER_REPO_URL}}" \
+      org.opencontainers.image.licenses="GPL-2.0-only" \
+      org.opencontainers.image.title="{{PLACEHOLDER_IMAGE_NAME}}"
+
+# Add build steps here
+COPY . /app
+WORKDIR /app
+
+# Example: RUN apk add --no-cache curl
+
+ENTRYPOINT ["{{PLACEHOLDER_ENTRYPOINT}}"]

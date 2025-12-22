@@ -1,0 +1,135 @@
+# yamllint disable rule:truthy rule:line-length
+---
+name: Sync shared assets into Ansible collections
+
+on:
+  # Auto-sync when shared assets change
+  push:
+    branches: ["main"]
+    paths:
+      - "default/**"
+      - "ansible-collection/**"
+      - ".github/workflows/sync-ansible-collections.yml"
+  # Allow manual runs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sync-collections:
+    name: Sync shared assets → ${{ matrix.repo }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - ansible-collection-foundational
+          - ansible-collection-rhel
+          - ansible-collection-supplementary
+          - ansible-collection-ocp
+
+    steps:
+      # --------------------------------------------------------------------
+      # 1) Checkout shared-assets (this repo)
+      # --------------------------------------------------------------------
+      - name: Checkout shared-assets
+        uses: actions/checkout@v4
+        with:
+          path: shared-assets
+
+      # --------------------------------------------------------------------
+      # 2) Checkout target collection repo with a bot token
+      # --------------------------------------------------------------------
+      - name: Checkout target collection repo
+        uses: actions/checkout@v4
+        with:
+          repository: lightning-it/${{ matrix.repo }}
+          path: repo
+          token: ${{ secrets.SYNC_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure git author in target repo
+        working-directory: repo
+        run: |
+          git config user.name "litreleasebot"
+          git config user.email "litreleasebot@users.noreply.github.com"
+
+      # --------------------------------------------------------------------
+      # 3) Sync Ansible-collection-specific assets
+      #    (.ansible-lint, ansible.cfg, pre-commit, devtools scripts, CI)
+      # --------------------------------------------------------------------
+      - name: Sync Ansible collection assets
+        working-directory: repo
+        run: |
+          set -e
+
+          SRC_AC="../shared-assets/ansible-collection"
+
+          # Ansible + lint configuration
+          if [ -f "${SRC_AC}/.ansible-lint" ]; then
+            cp -f "${SRC_AC}/.ansible-lint" .
+          fi
+
+          if [ -f "${SRC_AC}/ansible.cfg" ]; then
+            cp -f "${SRC_AC}/ansible.cfg" .
+          fi
+
+          if [ -f "${SRC_AC}/.pre-commit-config.yaml" ]; then
+            cp -f "${SRC_AC}/.pre-commit-config.yaml" .
+          fi
+
+          # Devtools scripts (wunder-devtools-ee wrapper, lint/molecule helpers)
+          if [ -d "${SRC_AC}/scripts" ]; then
+            mkdir -p ./scripts
+            rsync -av --delete "${SRC_AC}/scripts/" ./scripts/
+          fi
+
+          # CI workflows for collections (Collection CI, Galaxy publish, etc.)
+          if [ -d "${SRC_AC}/.github/workflows" ]; then
+            mkdir -p .github/workflows
+            rsync -av --delete "${SRC_AC}/.github/workflows/" .github/workflows/
+          fi
+
+      # --------------------------------------------------------------------
+      # 4) Detect changes
+      # --------------------------------------------------------------------
+      - name: Detect changes
+        id: diff
+        working-directory: repo
+        run: |
+          if git status --porcelain | grep .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --------------------------------------------------------------------
+      # 5) Create or update PR in target repo (one per sync branch)
+      # --------------------------------------------------------------------
+      - name: Create pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.SYNC_BOT_TOKEN }}
+          path: repo
+          commit-message: >-
+            chore: sync shared assets from lightning-it/shared-assets
+          branch: >-
+            chore/sync-shared-assets-${{ matrix.repo }}
+          title: "chore: sync shared assets"
+          body: |
+            Automated sync from
+            [lightning-it/shared-assets](https://github.com/lightning-it/shared-assets).
+
+            This PR updates:
+            - Ansible collection tooling (ansible.cfg, .ansible-lint, pre-commit)
+            - shared devtools scripts (wunder-devtools-ee helpers)
+            - collection CI workflows
+
+            Please review and merge to keep this collection aligned with the
+            central templates.
+          labels: "chore,shared-assets"
+          delete-branch: false
