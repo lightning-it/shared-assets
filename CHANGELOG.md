@@ -1,3 +1,9 @@
+## <small>1.0.1 (2025-12-22)</small>
+
+* fix: cleanup code handling (#4) ([e2589eb](https://github.com/lightning-it/shared-assets/commit/e2589eb)), closes [#4](https://github.com/lightning-it/shared-assets/issues/4)
+* fix: simplify bot token usage in sync workflow ([dfa29bb](https://github.com/lightning-it/shared-assets/commit/dfa29bb))
+* refactor: enhance pre-commit configuration with shared block markers ([1bc5b17](https://github.com/lightning-it/shared-assets/commit/1bc5b17))
+
 ## 1.0.0 (2025-12-22)
 
 * Initial commit ([6848f01](https://github.com/lightning-it/shared-assets/commit/6848f01))
