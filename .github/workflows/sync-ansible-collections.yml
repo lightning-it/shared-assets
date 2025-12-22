@@ -41,7 +41,7 @@ jobs:
           path: shared-assets
 
       # --------------------------------------------------------------------
-      # 2) Checkout target collection repo with a bot token
+      # 2) Checkout target collection repo with bot token
       # --------------------------------------------------------------------
       - name: Checkout target collection repo
         uses: actions/checkout@v4
@@ -59,7 +59,7 @@ jobs:
 
       # --------------------------------------------------------------------
       # 3) Sync Ansible-collection-specific assets
-      #    (.ansible-lint, ansible.cfg, pre-commit, devtools scripts, CI)
+      #    (.ansible-lint, ansible.cfg, shared pre-commit block, devtools, CI)
       # --------------------------------------------------------------------
       - name: Sync Ansible collection assets
         working-directory: repo
@@ -77,9 +77,49 @@ jobs:
             cp -f "${SRC_AC}/ansible.cfg" .
           fi
 
-          if [ -f "${SRC_AC}/.pre-commit-config.yaml" ]; then
-            cp -f "${SRC_AC}/.pre-commit-config.yaml" .
-          fi
+          # ------------------------------------------------------------------
+          # Shared pre-commit block:
+          # Replace content between the markers in .pre-commit-config.yaml:
+          #   # >>> BEGIN shared-assets pre-commit
+          #   ...
+          #   # <<< END shared-assets pre-commit
+          #
+          # Everything outside this block is repo-specific and will be kept.
+          # ------------------------------------------------------------------
+          python3 - << 'PY'
+          import sys
+          from pathlib import Path
+
+          repo_cfg = Path(".pre-commit-config.yaml")
+          shared_cfg = Path("../shared-assets/ansible-collection/pre-commit.shared.yaml")
+
+          begin = "# >>> BEGIN shared-assets pre-commit"
+          end = "# <<< END shared-assets pre-commit"
+
+          if not shared_cfg.is_file():
+              print("WARN: shared pre-commit template not found, skipping shared block sync.")
+              sys.exit(0)
+
+          shared_block = shared_cfg.read_text().rstrip()
+
+          if repo_cfg.is_file():
+              text = repo_cfg.read_text()
+          else:
+              # Minimal skeleton if the file does not yet exist
+              text = "repos:\n"
+
+          if begin not in text or end not in text:
+              print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
+              # Append new block at the end, keeping any existing content intact
+              new = text.rstrip() + "\n" + begin + "\n" + shared_block + "\n" + end + "\n"
+              repo_cfg.write_text(new)
+          else:
+              start = text.index(begin)
+              stop = text.index(end) + len(end)
+              replacement = begin + "\n" + shared_block + "\n" + end
+              new = text[:start] + replacement + text[stop:]
+              repo_cfg.write_text(new)
+          PY
 
           # Devtools scripts (wunder-devtools-ee wrapper, lint/molecule helpers)
           if [ -d "${SRC_AC}/scripts" ]; then
