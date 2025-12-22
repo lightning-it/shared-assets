@@ -1,11 +1,16 @@
 {
+  "name": "shared-assets",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Semantic-release toolchain for Lightning IT shared assets.",
+  "license": "GPL-2.0-only",
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/commit-analyzer": "^13.0.0",
     "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.6",
-    "@semantic-release/release-notes-generator": "^14.1.0",
-    "conventional-changelog-conventionalcommits": "^9.1.0",
-    "semantic-release": "^24.2.9"
+    "@semantic-release/github": "^9.0.0",
+    "@semantic-release/release-notes-generator": "^14.0.0",
+    "conventional-changelog-conventionalcommits": "^7.0.0",
+    "semantic-release": "^25.0.2"
   }
 }
