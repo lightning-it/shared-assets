@@ -1,3 +1,10 @@
+## <small>1.0.3 (2025-12-23)</small>
+
+* Merge pull request #8 from lightning-it/ro-cleanup ([03e2743](https://github.com/lightning-it/shared-assets/commit/03e2743)), closes [#8](https://github.com/lightning-it/shared-assets/issues/8)
+* Merge pull request #9 from lightning-it/ro-cleanup ([9130a45](https://github.com/lightning-it/shared-assets/commit/9130a45)), closes [#9](https://github.com/lightning-it/shared-assets/issues/9)
+* fix: correct syntax error in fallback for COLLECTION_NAME derivation ([1ed5f97](https://github.com/lightning-it/shared-assets/commit/1ed5f97))
+* refactor: improve readability and structure in devtools-molecule script ([84912e4](https://github.com/lightning-it/shared-assets/commit/84912e4))
+
 ## <small>1.0.2 (2025-12-23)</small>
 
 * Merge pull request #5 from lightning-it/ro-cleanup ([3b2b3a8](https://github.com/lightning-it/shared-assets/commit/3b2b3a8)), closes [#5](https://github.com/lightning-it/shared-assets/issues/5)
