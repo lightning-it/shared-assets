@@ -67,6 +67,7 @@ jobs:
           set -e
 
           SRC_AC="../shared-assets/ansible-collection"
+          SRC_DEFAULT="../shared-assets/default"
 
           # ------------------------------------------------------------------
           # Copy all shared top-level files if present
@@ -83,7 +84,7 @@ jobs:
             ".gitignore"
           do
             if [ -f "${SRC_AC}/${f}" ]; then
-              echo "Syncing ${f} from shared-assets..."
+              echo "Syncing ${f} from shared-assets/ansible-collection..."
               cp -f "${SRC_AC}/${f}" "./${f}"
             fi
           done
@@ -120,37 +121,44 @@ jobs:
               text = "repos:\n"
 
           if begin not in text or end not in text:
-            print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
-            # Append new block at the end, keeping any existing content intact
-            new = text.rstrip() + "\n" + begin + "\n" + shared_block + "\n" + end + "\n"
-            repo_cfg.write_text(new)
+              print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
+              new = text.rstrip() + "\n" + begin + "\n" + shared_block + "\n" + end + "\n"
+              repo_cfg.write_text(new)
           else:
-            start = text.index(begin)
-            stop = text.index(end) + len(end)
-            replacement = begin + "\n" + shared_block + "\n" + end
-            new = text[:start] + replacement + text[stop:]
-            repo_cfg.write_text(new)
+              start = text.index(begin)
+              stop = text.index(end) + len(end)
+              replacement = begin + "\n" + shared_block + "\n" + end
+              new = text[:start] + replacement + text[stop:]
+              repo_cfg.write_text(new)
           PY
 
           # ------------------------------------------------------------------
           # Devtools scripts (wunder-devtools-ee wrapper, lint/molecule helpers)
           #
-          # We want:
-          # - shared scripts from shared-assets → synced & cleaned
-          # - repo-local *heavy* helpers (e.g. devtools-molecule-*-heavy.sh)
-          #   to be preserved across syncs
+          # IMPORTANT:
+          #  - We keep --delete here so that obsolete helpers from the template
+          #    are cleaned up.
+          #  - Then we copy wunder-devtools-ee.sh from default/scripts into
+          #    the repo so the wrapper is not accidentally removed.
           # ------------------------------------------------------------------
           if [ -d "${SRC_AC}/scripts" ]; then
-            echo "Syncing devtools scripts..."
+            echo "Syncing devtools scripts from ansible-collection (with --delete)..."
             mkdir -p ./scripts
-            rsync -av --delete \
-              --exclude 'devtools-molecule-*-heavy.sh' \
-              "${SRC_AC}/scripts/" ./scripts/
+            rsync -av --delete "${SRC_AC}/scripts/" ./scripts/
           fi
 
+          # Ensure wunder-devtools-ee.sh from default/scripts is present
+          if [ -f "${SRC_DEFAULT}/scripts/wunder-devtools-ee.sh" ]; then
+            echo "Syncing default/scripts/wunder-devtools-ee.sh into repo/scripts/..."
+            mkdir -p ./scripts
+            cp -f "${SRC_DEFAULT}/scripts/wunder-devtools-ee.sh" ./scripts/
+          fi
+
+          # ------------------------------------------------------------------
           # CI workflows for collections (Collection CI, Galaxy publish, etc.)
+          # ------------------------------------------------------------------
           if [ -d "${SRC_AC}/.github/workflows" ]; then
-            echo "Syncing CI workflows..."
+            echo "Syncing CI workflows (with --delete)..."
             mkdir -p .github/workflows
             rsync -av --delete "${SRC_AC}/.github/workflows/" .github/workflows/
           fi
