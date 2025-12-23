@@ -66,17 +66,27 @@ jobs:
         run: |
           set -e
 
-          SRC_DEFAULT="../shared-assets/default"
           SRC_AC="../shared-assets/ansible-collection"
 
-          # Ansible + lint configuration
-          if [ -f "${SRC_AC}/.ansible-lint" ]; then
-            cp -f "${SRC_AC}/.ansible-lint" .
-          fi
-
-          if [ -f "${SRC_AC}/ansible.cfg" ]; then
-            cp -f "${SRC_AC}/ansible.cfg" .
-          fi
+          # ------------------------------------------------------------------
+          # Copy all shared top-level files if present
+          # ------------------------------------------------------------------
+          for f in \
+            ".ansible-lint" \
+            "ansible.cfg" \
+            "renovate.json" \
+            "AGENT.md" \
+            "CODE_OF_CONDUCT.md" \
+            "CONTRIBUTING.md" \
+            "SECURITY.md" \
+            ".releaserc" \
+            ".gitignore"
+          do
+            if [ -f "${SRC_AC}/${f}" ]; then
+              echo "Syncing ${f} from shared-assets..."
+              cp -f "${SRC_AC}/${f}" "./${f}"
+            fi
+          done
 
           # ------------------------------------------------------------------
           # Shared pre-commit block:
@@ -86,10 +96,8 @@ jobs:
           #   # <<< END shared-assets pre-commit
           #
           # Everything outside this block is repo-specific and will be kept.
-          # Shared content comes from:
-          #   shared-assets/ansible-collection/pre-commit.shared.yaml
           # ------------------------------------------------------------------
-          python3 - <<'PY'
+          python3 - << 'PY'
           import sys
           from pathlib import Path
 
@@ -124,25 +132,16 @@ jobs:
               repo_cfg.write_text(new)
           PY
 
-          # ------------------------------------------------------------------
-          # Devtools scripts
-          #  - default/scripts → generic helpers (all repos)
-          #  - ansible-collection/scripts → ansible-specific helpers/overrides
-          # ------------------------------------------------------------------
-          mkdir -p ./scripts
-
-          # 1) Copy generic default scripts (only if present)
-          if [ -d "${SRC_DEFAULT}/scripts" ]; then
-            rsync -av "${SRC_DEFAULT}/scripts/" ./scripts/
-          fi
-
-          # 2) Copy Ansible-collection scripts on top (can override defaults)
+          # Devtools scripts (wunder-devtools-ee wrapper, lint/molecule helpers)
           if [ -d "${SRC_AC}/scripts" ]; then
-            rsync -av "${SRC_AC}/scripts/" ./scripts/
+            echo "Syncing devtools scripts..."
+            mkdir -p ./scripts
+            rsync -av --delete "${SRC_AC}/scripts/" ./scripts/
           fi
 
           # CI workflows for collections (Collection CI, Galaxy publish, etc.)
           if [ -d "${SRC_AC}/.github/workflows" ]; then
+            echo "Syncing CI workflows..."
             mkdir -p .github/workflows
             rsync -av --delete "${SRC_AC}/.github/workflows/" .github/workflows/
           fi
