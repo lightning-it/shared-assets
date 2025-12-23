@@ -135,6 +135,18 @@ jobs:
           begin_in_text = next((b for b in possible_begins if b in text), None)
           end_in_text = next((e for e in possible_ends if e in text), None)
 
+          # Ensure a header and repos: exist when creating markers
+          if begin_in_text is None or end_in_text is None:
+              if not text.lstrip().startswith("---"):
+                  text = "---\n" + text.lstrip()
+              if "repos:" not in text:
+                  text = text.rstrip() + "\nrepos:\n"
+              elif not text.rstrip().endswith("repos:"):
+                  if "repos:" in text:
+                      # Make sure repos: ends with a newline
+                      parts = text.rsplit("repos:", 1)
+                      text = "repos:".join(parts[:-1]) + "repos:\n" + parts[-1]
+
           target_begin = begin_in_text or f"  {base_begin}"
           target_end = end_in_text or f"  {base_end}"
 
