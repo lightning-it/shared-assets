@@ -105,31 +105,52 @@ jobs:
           repo_cfg = Path(".pre-commit-config.yaml")
           shared_cfg = Path("../shared-assets/ansible-collection/pre-commit-config.shared.yaml")
 
-          begin = "# >>> BEGIN shared-assets pre-commit"
-          end = "# <<< END shared-assets pre-commit"
+          base_begin = "# >>> BEGIN shared-assets pre-commit"
+          base_end = "# <<< END shared-assets pre-commit"
 
           if not shared_cfg.is_file():
               print("WARN: shared pre-commit template not found, skipping shared block sync.")
               sys.exit(0)
 
-          shared_block = shared_cfg.read_text().rstrip()
+          raw_block = shared_cfg.read_text().strip("\n")
+
+          lines = raw_block.splitlines()
+          if lines and lines[0].strip() == "---":
+              lines = lines[1:]
+          if lines and lines[0].strip() == "repos:":
+              # Drop the top-level key and one level of indentation.
+              lines = lines[1:]
+              lines = [ln[2:] if ln.startswith("  ") else ln for ln in lines]
+          shared_block = "\n".join(lines).strip("\n")
 
           if repo_cfg.is_file():
               text = repo_cfg.read_text()
           else:
               # Minimal skeleton if the file does not yet exist
-              text = "repos:\n"
+              text = ""
 
-          if begin not in text or end not in text:
+          possible_begins = [base_begin, f"  {base_begin}"]
+          possible_ends = [base_end, f"  {base_end}"]
+
+          begin_in_text = next((b for b in possible_begins if b in text), None)
+          end_in_text = next((e for e in possible_ends if e in text), None)
+
+          target_begin = begin_in_text or f"  {base_begin}"
+          target_end = end_in_text or f"  {base_end}"
+
+          indent = target_begin.split("#")[0]
+          indented_block = "\n".join(f"{indent}{line}" if line else indent for line in shared_block.splitlines())
+
+          if begin_in_text is None or end_in_text is None:
               print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
-              new = text.rstrip() + "\n" + begin + "\n" + shared_block + "\n" + end + "\n"
-              repo_cfg.write_text(new)
+              new = text.rstrip() + "\n" + target_begin + "\n" + indented_block + "\n" + target_end + "\n"
           else:
-              start = text.index(begin)
-              stop = text.index(end) + len(end)
-              replacement = begin + "\n" + shared_block + "\n" + end
+              start = text.index(begin_in_text)
+              stop = text.index(end_in_text) + len(end_in_text)
+              replacement = target_begin + "\n" + indented_block + "\n" + target_end
               new = text[:start] + replacement + text[stop:]
-              repo_cfg.write_text(new)
+
+          repo_cfg.write_text(new)
           PY
 
           # ------------------------------------------------------------------
