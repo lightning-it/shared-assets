@@ -150,6 +150,11 @@ jobs:
               replacement = target_begin + "\n" + indented_block + "\n" + target_end
               new = text[:start] + replacement + text[stop:]
 
+          # Ensure a YAML document start exists once at the top
+          stripped = new.lstrip()
+          if not stripped.startswith("---"):
+              new = "---\n" + stripped
+
           repo_cfg.write_text(new)
           PY
 
