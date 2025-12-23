@@ -120,23 +120,32 @@ jobs:
               text = "repos:\n"
 
           if begin not in text or end not in text:
-              print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
-              # Append new block at the end, keeping any existing content intact
-              new = text.rstrip() + "\n" + begin + "\n" + shared_block + "\n" + end + "\n"
-              repo_cfg.write_text(new)
+            print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
+            # Append new block at the end, keeping any existing content intact
+            new = text.rstrip() + "\n" + begin + "\n" + shared_block + "\n" + end + "\n"
+            repo_cfg.write_text(new)
           else:
-              start = text.index(begin)
-              stop = text.index(end) + len(end)
-              replacement = begin + "\n" + shared_block + "\n" + end
-              new = text[:start] + replacement + text[stop:]
-              repo_cfg.write_text(new)
+            start = text.index(begin)
+            stop = text.index(end) + len(end)
+            replacement = begin + "\n" + shared_block + "\n" + end
+            new = text[:start] + replacement + text[stop:]
+            repo_cfg.write_text(new)
           PY
 
+          # ------------------------------------------------------------------
           # Devtools scripts (wunder-devtools-ee wrapper, lint/molecule helpers)
+          #
+          # We want:
+          # - shared scripts from shared-assets → synced & cleaned
+          # - repo-local *heavy* helpers (e.g. devtools-molecule-*-heavy.sh)
+          #   to be preserved across syncs
+          # ------------------------------------------------------------------
           if [ -d "${SRC_AC}/scripts" ]; then
             echo "Syncing devtools scripts..."
             mkdir -p ./scripts
-            rsync -av --delete "${SRC_AC}/scripts/" ./scripts/
+            rsync -av --delete \
+              --exclude 'devtools-molecule-*-heavy.sh' \
+              "${SRC_AC}/scripts/" ./scripts/
           fi
 
           # CI workflows for collections (Collection CI, Galaxy publish, etc.)
