@@ -135,16 +135,18 @@ jobs:
           # ------------------------------------------------------------------
           # Devtools scripts (wunder-devtools-ee wrapper, lint/molecule helpers)
           #
-          # IMPORTANT:
-          #  - We keep --delete here so that obsolete helpers from the template
-          #    are cleaned up.
-          #  - Then we copy wunder-devtools-ee.sh from default/scripts into
-          #    the repo so the wrapper is not accidentally removed.
+          # We want:
+          #   - shared helpers synced exactly (including deletion of old ones)
+          #   - BUT heavy Molecule scripts (devtools-molecule-*-heavy.sh)
+          #     to remain repo-local and not be touched.
           # ------------------------------------------------------------------
           if [ -d "${SRC_AC}/scripts" ]; then
-            echo "Syncing devtools scripts from ansible-collection (with --delete)..."
+            echo "Syncing devtools scripts from ansible-collection (with --delete, excluding devtools-molecule-*-heavy.sh)..."
             mkdir -p ./scripts
-            rsync -av --delete "${SRC_AC}/scripts/" ./scripts/
+            rsync -av \
+              --delete \
+              --exclude='devtools-molecule-*-heavy.sh' \
+              "${SRC_AC}/scripts/" ./scripts/
           fi
 
           # Ensure wunder-devtools-ee.sh from default/scripts is present
