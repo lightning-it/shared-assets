@@ -1,3 +1,18 @@
+## <small>1.0.4 (2025-12-23)</small>
+
+* Merge pull request #10 from lightning-it/ro-cleanup ([bec745b](https://github.com/lightning-it/shared-assets/commit/bec745b)), closes [#10](https://github.com/lightning-it/shared-assets/issues/10)
+* Merge pull request #11 from lightning-it/ro-cleanup ([59f8230](https://github.com/lightning-it/shared-assets/commit/59f8230)), closes [#11](https://github.com/lightning-it/shared-assets/issues/11)
+* Merge pull request #12 from lightning-it/ro-cleanup ([4529152](https://github.com/lightning-it/shared-assets/commit/4529152)), closes [#12](https://github.com/lightning-it/shared-assets/issues/12)
+* Merge pull request #13 from lightning-it/ro-cleanup ([773f7be](https://github.com/lightning-it/shared-assets/commit/773f7be)), closes [#13](https://github.com/lightning-it/shared-assets/issues/13)
+* Merge pull request #14 from lightning-it/ro-cleanup ([65efb90](https://github.com/lightning-it/shared-assets/commit/65efb90)), closes [#14](https://github.com/lightning-it/shared-assets/issues/14)
+* Merge pull request #15 from lightning-it/ro-missing-files-added ([08cc7e1](https://github.com/lightning-it/shared-assets/commit/08cc7e1)), closes [#15](https://github.com/lightning-it/shared-assets/issues/15)
+* fix: correct path to shared pre-commit configuration and add new pre-commit config file ([1753f4a](https://github.com/lightning-it/shared-assets/commit/1753f4a))
+* refactor: clear schedule configuration in renovate.json ([3f2828a](https://github.com/lightning-it/shared-assets/commit/3f2828a))
+* refactor: enhance asset syncing in Ansible workflow by adding default scripts and improving logging ([42f2144](https://github.com/lightning-it/shared-assets/commit/42f2144))
+* refactor: enhance asset syncing in Ansible workflow by copying multiple shared files ([43da399](https://github.com/lightning-it/shared-assets/commit/43da399))
+* refactor: enhance sync process in Ansible workflow and update .gitignore for Vagrant artifacts ([623db6f](https://github.com/lightning-it/shared-assets/commit/623db6f))
+* refactor: update devtools script syncing to exclude heavy Molecule scripts ([cfef7a1](https://github.com/lightning-it/shared-assets/commit/cfef7a1))
+
 ## <small>1.0.3 (2025-12-23)</small>
 
 * Merge pull request #8 from lightning-it/ro-cleanup ([03e2743](https://github.com/lightning-it/shared-assets/commit/03e2743)), closes [#8](https://github.com/lightning-it/shared-assets/issues/8)
