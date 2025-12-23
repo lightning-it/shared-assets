@@ -1,3 +1,12 @@
+## <small>1.0.2 (2025-12-23)</small>
+
+* Merge pull request #5 from lightning-it/ro-cleanup ([3b2b3a8](https://github.com/lightning-it/shared-assets/commit/3b2b3a8)), closes [#5](https://github.com/lightning-it/shared-assets/issues/5)
+* Merge pull request #6 from lightning-it/ro-cleanup ([ddbef0a](https://github.com/lightning-it/shared-assets/commit/ddbef0a)), closes [#6](https://github.com/lightning-it/shared-assets/issues/6)
+* Merge pull request #7 from lightning-it/ro-cleanup ([c5ad25b](https://github.com/lightning-it/shared-assets/commit/c5ad25b)), closes [#7](https://github.com/lightning-it/shared-assets/issues/7)
+* fix: ensure scenario filter is set correctly in devtools-molecule script ([cff96b2](https://github.com/lightning-it/shared-assets/commit/cff96b2))
+* chore: update script permissions to make them executable ([285dd2f](https://github.com/lightning-it/shared-assets/commit/285dd2f))
+* refactor: update sync workflow and pre-commit markers for clarity ([5447e07](https://github.com/lightning-it/shared-assets/commit/5447e07))
+
 ## <small>1.0.1 (2025-12-22)</small>
 
 * fix: cleanup code handling (#4) ([e2589eb](https://github.com/lightning-it/shared-assets/commit/e2589eb)), closes [#4](https://github.com/lightning-it/shared-assets/issues/4)
