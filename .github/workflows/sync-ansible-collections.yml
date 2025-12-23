@@ -103,7 +103,7 @@ jobs:
           from pathlib import Path
 
           repo_cfg = Path(".pre-commit-config.yaml")
-          shared_cfg = Path("../shared-assets/ansible-collection/pre-commit.shared.yaml")
+          shared_cfg = Path("../shared-assets/ansible-collection/pre-commit-config.shared.yaml")
 
           begin = "# >>> BEGIN shared-assets pre-commit"
           end = "# <<< END shared-assets pre-commit"
