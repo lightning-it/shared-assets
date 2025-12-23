@@ -66,6 +66,7 @@ jobs:
         run: |
           set -e
 
+          SRC_DEFAULT="../shared-assets/default"
           SRC_AC="../shared-assets/ansible-collection"
 
           # Ansible + lint configuration
@@ -85,8 +86,10 @@ jobs:
           #   # <<< END shared-assets pre-commit
           #
           # Everything outside this block is repo-specific and will be kept.
+          # Shared content comes from:
+          #   shared-assets/ansible-collection/pre-commit.shared.yaml
           # ------------------------------------------------------------------
-          python3 - << 'PY'
+          python3 - <<'PY'
           import sys
           from pathlib import Path
 
@@ -121,10 +124,21 @@ jobs:
               repo_cfg.write_text(new)
           PY
 
-          # Devtools scripts (wunder-devtools-ee wrapper, lint/molecule helpers)
+          # ------------------------------------------------------------------
+          # Devtools scripts
+          #  - default/scripts → generic helpers (all repos)
+          #  - ansible-collection/scripts → ansible-specific helpers/overrides
+          # ------------------------------------------------------------------
+          mkdir -p ./scripts
+
+          # 1) Copy generic default scripts (only if present)
+          if [ -d "${SRC_DEFAULT}/scripts" ]; then
+            rsync -av "${SRC_DEFAULT}/scripts/" ./scripts/
+          fi
+
+          # 2) Copy Ansible-collection scripts on top (can override defaults)
           if [ -d "${SRC_AC}/scripts" ]; then
-            mkdir -p ./scripts
-            rsync -av --delete "${SRC_AC}/scripts/" ./scripts/
+            rsync -av "${SRC_AC}/scripts/" ./scripts/
           fi
 
           # CI workflows for collections (Collection CI, Galaxy publish, etc.)
