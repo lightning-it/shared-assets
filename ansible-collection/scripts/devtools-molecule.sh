@@ -32,8 +32,8 @@ PY
   )"
 fi
 
-# Fallback: derive from repo name (ansible-collection-<name>)
-if [ -z "${COLLECTION_NAME:-}" ] then
+# Fallback: derive COLLECTION_NAME from repo name (ansible-collection-<name>)
+if [ -z "${COLLECTION_NAME:-}" ]; then
   if [ -n "${GITHUB_REPOSITORY:-}" ]; then
     repo_basename="${GITHUB_REPOSITORY##*/}"
   else
