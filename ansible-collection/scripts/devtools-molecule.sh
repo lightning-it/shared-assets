@@ -57,13 +57,13 @@ export WUNDER_DEVTOOLS_RUN_AS_HOST_UID=0
 WUNDER_DEVTOOLS_RUN_AS_HOST_UID=0 \
 COLLECTION_NAMESPACE="${COLLECTION_NAMESPACE}" \
 COLLECTION_NAME="${COLLECTION_NAME}" \
-SCENARIO_FILTER="${SCENARIO_FILTER}" \
+SCENARIO_FILTER="${SCENARIO_FILTER:-}" \
 bash scripts/wunder-devtools-ee.sh bash -lc '
   set -euo pipefail
 
   ns="${COLLECTION_NAMESPACE}"
   name="${COLLECTION_NAME}"
-  scenario_filter="${SCENARIO_FILTER-}"
+  scenario_filter="${SCENARIO_FILTER:-}"
 
   echo "Preparing collection ${ns}.${name} for Molecule tests..."
   [ -n "$scenario_filter" ] && echo "Limiting to scenario: ${scenario_filter}"
