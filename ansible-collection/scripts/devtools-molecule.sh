@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 # Run all non-*heavy Molecule scenarios for the current collection
 # inside the wunder-devtools-ee container.
@@ -16,6 +16,7 @@ fi
 SCENARIO_FILTER="${1:-}"
 COLLECTION_NAMESPACE="${COLLECTION_NAMESPACE:-lit}"
 
+# Prefer authoritative name from galaxy.yml
 if [ -z "${COLLECTION_NAME:-}" ] && [ -f galaxy.yml ]; then
   COLLECTION_NAME="$(python3 - <<'PY'
 import yaml
@@ -31,7 +32,8 @@ PY
   )"
 fi
 
-if [ -z "${COLLECTION_NAME:-}" ]; then
+# Fallback: derive from repo name (ansible-collection-<name>)
+if [ -z "${COLLECTION_NAME:-}" ] then
   if [ -n "${GITHUB_REPOSITORY:-}" ]; then
     repo_basename="${GITHUB_REPOSITORY##*/}"
   else
@@ -50,14 +52,18 @@ if [ -z "${COLLECTION_NAME:-}" ]; then
 fi
 
 echo "Preparing Molecule tests for collection: ${COLLECTION_NAMESPACE}.${COLLECTION_NAME}"
-[ -n "$SCENARIO_FILTER" ] && echo "Scenario filter: ${SCENARIO_FILTER}"
+if [ -n "${SCENARIO_FILTER}" ]; then
+  echo "Scenario filter: ${SCENARIO_FILTER}"
+fi
 
+# For Molecule (Docker + delegated etc.) we run as root inside the container
+# so that the Docker SDK sees a valid /etc/passwd entry and can reach the socket.
 export WUNDER_DEVTOOLS_RUN_AS_HOST_UID=0
 
 WUNDER_DEVTOOLS_RUN_AS_HOST_UID=0 \
 COLLECTION_NAMESPACE="${COLLECTION_NAMESPACE}" \
 COLLECTION_NAME="${COLLECTION_NAME}" \
-SCENARIO_FILTER="${SCENARIO_FILTER:-}" \
+SCENARIO_FILTER="${SCENARIO_FILTER}" \
 bash scripts/wunder-devtools-ee.sh bash -lc '
   set -euo pipefail
 
@@ -66,7 +72,9 @@ bash scripts/wunder-devtools-ee.sh bash -lc '
   scenario_filter="${SCENARIO_FILTER:-}"
 
   echo "Preparing collection ${ns}.${name} for Molecule tests..."
-  [ -n "$scenario_filter" ] && echo "Limiting to scenario: ${scenario_filter}"
+  if [ -n "${scenario_filter}" ]; then
+    echo "Limiting to scenario: ${scenario_filter}"
+  fi
 
   echo "DEBUG: docker info inside wunder-devtools-ee..."
   if ! docker info >/dev/null 2>&1; then
@@ -74,6 +82,10 @@ bash scripts/wunder-devtools-ee.sh bash -lc '
     exit 1
   fi
 
+  # -------------------------------------------------------------
+  # 1) Clean potentially stale dependency installs
+  #    so we can re-install galaxy.yml dependencies cleanly
+  # -------------------------------------------------------------
   dep_paths=()
   dep_fqcns=()
 
@@ -110,8 +122,12 @@ PY
     fi
   done
 
+  # -------------------------------------------------------------
+  # 2) Build + install collection into /tmp/wunder/collections
+  # -------------------------------------------------------------
   /workspace/scripts/devtools-collection-prepare.sh
 
+  # 2b) Install declared dependencies freshly (if any)
   for dep_fqcn in "${dep_fqcns[@]}"; do
     if [ -n "$dep_fqcn" ]; then
       echo "Installing dependency ${dep_fqcn} into /tmp/wunder/collections..."
@@ -122,6 +138,9 @@ PY
     fi
   done
 
+  # -------------------------------------------------------------
+  # 3) Configure Ansible env for Molecule
+  # -------------------------------------------------------------
   export ANSIBLE_COLLECTIONS_PATHS=/tmp/wunder/collections
 
   if [ -f /workspace/ansible.cfg ]; then
@@ -129,15 +148,21 @@ PY
   fi
 
   export MOLECULE_NO_LOG="${MOLECULE_NO_LOG:-false}"
+  # Inside the container the Docker socket is mounted at /var/run/docker.sock
   export DOCKER_HOST="${DOCKER_HOST:-unix:///var/run/docker.sock}"
 
+  # -------------------------------------------------------------
+  # 4) Discover scenarios
+  #    - If SCENARIO_FILTER is set, run only that one
+  #    - Otherwise, run all non-*heavy scenarios
+  # -------------------------------------------------------------
   scenarios=()
 
   if [ -n "$scenario_filter" ]; then
     if [ -d "molecule/$scenario_filter" ] && [ -f "molecule/$scenario_filter/molecule.yml" ]; then
       scenarios+=("$scenario_filter")
     else
-      echo "ERROR: Requested scenario '"'${scenario_filter}'"' not found under molecule/." >&2
+      echo "ERROR: Requested scenario '${scenario_filter}' not found under molecule/." >&2
       exit 1
     fi
   else
@@ -146,7 +171,7 @@ PY
         scen="${dir##*/}"
         case "$scen" in
           *_heavy)
-            echo "Skipping heavy scenario '"'${scen}'"' in devtools-molecule.sh (run manually via dedicated script)."
+            echo "Skipping heavy scenario '${scen}' in devtools-molecule.sh (run manually via dedicated script)."
             ;;
           *)
             scenarios+=("$scen")
@@ -156,13 +181,15 @@ PY
     fi
   fi
 
-  if [ ${#scenarios[@]} -eq 0 ]; then
-    echo "No Molecule scenarios found."
+  if [ "${#scenarios[@]}" -eq 0 ]; then
+    echo "No Molecule scenarios found (non-heavy)."
     exit 0
   fi
 
+  echo "Running Molecule scenarios: ${scenarios[*]}"
+
   for scen in "${scenarios[@]}"; do
-    echo "Running molecule test -s ${scen}"
+    echo ">>> molecule test -s ${scen}"
     molecule test -s "${scen}"
   done
 '
