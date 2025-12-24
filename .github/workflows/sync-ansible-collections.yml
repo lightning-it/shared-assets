@@ -147,10 +147,10 @@ jobs:
           target_end = f"  {base_end}"
 
           indent = target_begin.split("#")[0]
-          indented_block = "\n".join(
-              f"{indent}{line}" if line else indent
-              for line in shared_block.splitlines()
-          )
+          def _indent_line(line: str) -> str:
+              return f"{indent}{line}" if line.strip() else ""
+
+          indented_block = "\n".join(_indent_line(line) for line in shared_block.splitlines())
 
           if begin_in_text is None or end_in_text is None:
               print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
