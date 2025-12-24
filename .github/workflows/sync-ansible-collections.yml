@@ -114,19 +114,20 @@ jobs:
 
           raw_block = shared_cfg.read_text().strip("\n")
 
+          # Drop a leading document start + top-level repos: if present
           lines = raw_block.splitlines()
           if lines and lines[0].strip() == "---":
               lines = lines[1:]
           if lines and lines[0].strip() == "repos:":
-              # Drop the top-level key and one level of indentation.
               lines = lines[1:]
+              # Drop one level of indentation from the shared block
               lines = [ln[2:] if ln.startswith("  ") else ln for ln in lines]
           shared_block = "\n".join(lines).strip("\n")
 
           if repo_cfg.is_file():
               text = repo_cfg.read_text()
           else:
-              # Minimal skeleton if the file does not yet exist
+              # Start from empty; we’ll add '---' and 'repos:' below if missing
               text = ""
 
           possible_begins = [base_begin, f"  {base_begin}"]
@@ -141,11 +142,15 @@ jobs:
           if not any(line.lstrip().startswith("repos:") for line in text.splitlines()):
               text = text.rstrip() + "\nrepos:\n"
 
-          target_begin = begin_in_text or f"  {base_begin}"
-          target_end = end_in_text or f"  {base_end}"
+          # Always indent markers under repos: for valid YAML
+          target_begin = f"  {base_begin}"
+          target_end = f"  {base_end}"
 
           indent = target_begin.split("#")[0]
-          indented_block = "\n".join(f"{indent}{line}" if line else indent for line in shared_block.splitlines())
+          indented_block = "\n".join(
+              f"{indent}{line}" if line else indent
+              for line in shared_block.splitlines()
+          )
 
           if begin_in_text is None or end_in_text is None:
               print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
