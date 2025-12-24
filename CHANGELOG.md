@@ -1,3 +1,23 @@
+## 1.1.0 (2025-12-24)
+
+* Merge pull request #16 from lightning-it/ro-missing-files-added ([2cf1851](https://github.com/lightning-it/shared-assets/commit/2cf1851)), closes [#16](https://github.com/lightning-it/shared-assets/issues/16)
+* Merge pull request #17 from lightning-it/ro-pre-commit ([7d28fee](https://github.com/lightning-it/shared-assets/commit/7d28fee)), closes [#17](https://github.com/lightning-it/shared-assets/issues/17)
+* Merge pull request #18 from lightning-it/ro-refactoring-format ([da3b679](https://github.com/lightning-it/shared-assets/commit/da3b679)), closes [#18](https://github.com/lightning-it/shared-assets/issues/18)
+* Merge pull request #19 from lightning-it/ro-refactoring-format ([0dd814c](https://github.com/lightning-it/shared-assets/commit/0dd814c)), closes [#19](https://github.com/lightning-it/shared-assets/issues/19)
+* Merge pull request #20 from lightning-it/ro-refactoring-format ([f8aa6ce](https://github.com/lightning-it/shared-assets/commit/f8aa6ce)), closes [#20](https://github.com/lightning-it/shared-assets/issues/20)
+* Merge pull request #21 from lightning-it/ro-refactoring-format ([25b9e42](https://github.com/lightning-it/shared-assets/commit/25b9e42)), closes [#21](https://github.com/lightning-it/shared-assets/issues/21)
+* Merge pull request #22 from lightning-it/ro-refactoring-format ([fcecde5](https://github.com/lightning-it/shared-assets/commit/fcecde5)), closes [#22](https://github.com/lightning-it/shared-assets/issues/22)
+* Merge pull request #23 from lightning-it/ro-refactoring-format ([de5eeb6](https://github.com/lightning-it/shared-assets/commit/de5eeb6)), closes [#23](https://github.com/lightning-it/shared-assets/issues/23)
+* feat: add devtools-galaxy-verify script for Galaxy-style checks on collections ([96315cb](https://github.com/lightning-it/shared-assets/commit/96315cb))
+* refactor: clean up pre-commit configuration by removing unnecessary comments and sections ([abd7c91](https://github.com/lightning-it/shared-assets/commit/abd7c91))
+* refactor: enhance pre-commit block synchronization logic and improve indentation handling ([e3e6523](https://github.com/lightning-it/shared-assets/commit/e3e6523))
+* refactor: ensure document start and top-level repos key are present when creating markers ([42cb09a](https://github.com/lightning-it/shared-assets/commit/42cb09a))
+* refactor: ensure header and repos section are present when creating markers ([b49d9c6](https://github.com/lightning-it/shared-assets/commit/b49d9c6))
+* refactor: ensure YAML document start is present in sync workflow ([4c4188d](https://github.com/lightning-it/shared-assets/commit/4c4188d))
+* refactor: improve indentation handling for shared pre-commit block ([02d9245](https://github.com/lightning-it/shared-assets/commit/02d9245))
+* refactor: streamline handling of document start and top-level repos key in shared block ([565a545](https://github.com/lightning-it/shared-assets/commit/565a545))
+* refactor: update pre-commit configuration for improved readability and structure ([a58c3b8](https://github.com/lightning-it/shared-assets/commit/a58c3b8))
+
 ## <small>1.0.4 (2025-12-23)</small>
 
 * Merge pull request #10 from lightning-it/ro-cleanup ([bec745b](https://github.com/lightning-it/shared-assets/commit/bec745b)), closes [#10](https://github.com/lightning-it/shared-assets/issues/10)
