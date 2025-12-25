@@ -1,3 +1,13 @@
+## 1.2.0 (2025-12-25)
+
+* Merge pull request #25 from lightning-it/ro-refactoring-ansible ([00a0b03](https://github.com/lightning-it/shared-assets/commit/00a0b03)), closes [#25](https://github.com/lightning-it/shared-assets/issues/25)
+* Merge pull request #26 from lightning-it/ro-refactoring-ansible ([aa75ca2](https://github.com/lightning-it/shared-assets/commit/aa75ca2)), closes [#26](https://github.com/lightning-it/shared-assets/issues/26)
+* feat: add inventory sync workflow ([2e5fb59](https://github.com/lightning-it/shared-assets/commit/2e5fb59))
+* chore: add inventory base template ([14aea34](https://github.com/lightning-it/shared-assets/commit/14aea34))
+* chore: nest ansible-collection templates under base ([514d6e5](https://github.com/lightning-it/shared-assets/commit/514d6e5))
+* chore: point collection sync to base templates ([85037fa](https://github.com/lightning-it/shared-assets/commit/85037fa))
+* chore: relocate inventory template under ansible-inventory ([c031706](https://github.com/lightning-it/shared-assets/commit/c031706))
+
 ## 1.1.0 (2025-12-24)
 
 * Merge pull request #16 from lightning-it/ro-missing-files-added ([2cf1851](https://github.com/lightning-it/shared-assets/commit/2cf1851)), closes [#16](https://github.com/lightning-it/shared-assets/issues/16)
