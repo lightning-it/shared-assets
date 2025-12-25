@@ -1,0 +1,90 @@
+# yamllint disable rule:truthy rule:line-length
+---
+name: Sync shared assets into Ansible inventories
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "ansible-inventory/**"
+      - ".github/workflows/sync-ansible-inventories.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sync-inventories:
+    name: Sync shared assets → ${{ matrix.repo }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - ansible-inventory-corp
+          # add more inventory repos here
+
+    steps:
+      - name: Checkout shared-assets
+        uses: actions/checkout@v4
+        with:
+          path: shared-assets
+
+      - name: Checkout target inventory repo
+        uses: actions/checkout@v4
+        with:
+          repository: lightning-it/${{ matrix.repo }}
+          path: repo
+          token: ${{ secrets.SYNC_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure git author in target repo
+        working-directory: repo
+        run: |
+          git config user.name "litreleasebot"
+          git config user.email "litreleasebot@users.noreply.github.com"
+
+      - name: Sync inventory base assets
+        working-directory: repo
+        run: |
+          set -e
+          SRC_INV="../shared-assets/ansible-inventory/base"
+
+          for f in ".gitignore" "ansible.cfg" "LICENSE"; do
+            if [ -f "${SRC_INV}/${f}" ]; then
+              echo "Syncing ${f} from ansible-inventory/base..."
+              cp -f "${SRC_INV}/${f}" "./${f}"
+            fi
+          done
+
+      - name: Detect changes
+        id: diff
+        working-directory: repo
+        run: |
+          if git status --porcelain | grep .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.SYNC_BOT_TOKEN }}
+          path: repo
+          commit-message: "chore: sync shared assets from lightning-it/shared-assets"
+          branch: chore/sync-shared-assets-${{ matrix.repo }}
+          title: "chore: sync shared assets"
+          body: |
+            Automated sync from
+            [lightning-it/shared-assets](https://github.com/lightning-it/shared-assets).
+
+            This PR updates:
+            - inventory base assets (.gitignore, ansible.cfg, LICENSE)
+
+            Please review and merge to keep this inventory aligned with the
+            central templates.
+          labels: "chore,shared-assets"
+          delete-branch: false
