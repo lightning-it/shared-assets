@@ -18,6 +18,9 @@ jobs:
   sync-inventories:
     name: Sync shared assets → ${{ matrix.repo }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -76,6 +79,7 @@ jobs:
           path: repo
           commit-message: "chore: sync shared assets from lightning-it/shared-assets"
           branch: chore/sync-shared-assets-${{ matrix.repo }}
+          branch-suffix: timestamp
           title: "chore: sync shared assets"
           body: |
             Automated sync from
