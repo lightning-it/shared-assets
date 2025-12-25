@@ -39,7 +39,7 @@ jobs:
         with:
           repository: lightning-it/${{ matrix.repo }}
           path: repo
-          token: ${{ secrets.SYNC_BOT_TOKEN }}
+          token: ${{ secrets.LITRELEASEBOT_TOKEN }}
           fetch-depth: 0
 
       - name: Configure git author in target repo
@@ -75,7 +75,7 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.SYNC_BOT_TOKEN }}
+          token: ${{ secrets.LITRELEASEBOT_TOKEN }}
           path: repo
           commit-message: "chore: sync shared assets from lightning-it/shared-assets"
           branch: chore/sync-shared-assets-${{ matrix.repo }}
