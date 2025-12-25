@@ -1,3 +1,8 @@
+## <small>1.2.2 (2025-12-25)</small>
+
+* Merge pull request #28 from lightning-it/ro-refactoring-ansible ([8ec1b19](https://github.com/lightning-it/shared-assets/commit/8ec1b19)), closes [#28](https://github.com/lightning-it/shared-assets/issues/28)
+* fix: make inventory sync branch pushes more reliable ([017b00f](https://github.com/lightning-it/shared-assets/commit/017b00f))
+
 ## <small>1.2.1 (2025-12-25)</small>
 
 * Merge pull request #27 from lightning-it/ro-refactoring-ansible ([a7cd71e](https://github.com/lightning-it/shared-assets/commit/a7cd71e)), closes [#27](https://github.com/lightning-it/shared-assets/issues/27)
