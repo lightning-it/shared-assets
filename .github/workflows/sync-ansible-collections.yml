@@ -66,7 +66,7 @@ jobs:
         run: |
           set -e
 
-          SRC_AC="../shared-assets/ansible-collection"
+          SRC_AC="../shared-assets/ansible-collection/base"
           SRC_DEFAULT="../shared-assets/default"
 
           # ------------------------------------------------------------------
@@ -103,7 +103,7 @@ jobs:
           from pathlib import Path
 
           repo_cfg = Path(".pre-commit-config.yaml")
-          shared_cfg = Path("../shared-assets/ansible-collection/pre-commit-config.shared.yaml")
+          shared_cfg = Path("../shared-assets/ansible-collection/base/pre-commit-config.shared.yaml")
 
           base_begin = "# >>> BEGIN shared-assets pre-commit"
           base_end = "# <<< END shared-assets pre-commit"
@@ -178,7 +178,7 @@ jobs:
           #     to remain repo-local and not be touched.
           # ------------------------------------------------------------------
           if [ -d "${SRC_AC}/scripts" ]; then
-            echo "Syncing devtools scripts from ansible-collection (with --delete, excluding devtools-molecule-*-heavy.sh)..."
+            echo "Syncing devtools scripts from ansible-collection/base (with --delete, excluding devtools-molecule-*-heavy.sh)..."
             mkdir -p ./scripts
             rsync -av \
               --delete \
