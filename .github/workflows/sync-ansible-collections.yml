@@ -36,7 +36,7 @@ jobs:
       # 1) Checkout shared-assets (this repo)
       # --------------------------------------------------------------------
       - name: Checkout shared-assets
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: shared-assets
 
@@ -44,7 +44,7 @@ jobs:
       # 2) Checkout target collection repo with bot token
       # --------------------------------------------------------------------
       - name: Checkout target collection repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: lightning-it/${{ matrix.repo }}
           path: repo

@@ -30,12 +30,12 @@ jobs:
 
     steps:
       - name: Checkout shared-assets
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: shared-assets
 
       - name: Checkout target inventory repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: lightning-it/${{ matrix.repo }}
           path: repo
