@@ -199,9 +199,17 @@ jobs:
           # CI workflows for collections (Collection CI, Galaxy publish, etc.)
           # ------------------------------------------------------------------
           if [ -d "${SRC_AC}/.github/workflows" ]; then
-            echo "Syncing CI workflows (with --delete)..."
+            echo "Syncing CI workflows from ansible-collection/base (with --delete)..."
             mkdir -p .github/workflows
             rsync -av --delete "${SRC_AC}/.github/workflows/" .github/workflows/
+          fi
+
+          # Additional shared workflows (e.g., release) live outside base/.
+          EXTRA_WF="../shared-assets/ansible-collection/.github/workflows"
+          if [ -d "${EXTRA_WF}" ]; then
+            echo "Syncing additional CI workflows from ansible-collection/.github/workflows..."
+            mkdir -p .github/workflows
+            rsync -av "${EXTRA_WF}/" .github/workflows/
           fi
 
       # --------------------------------------------------------------------
