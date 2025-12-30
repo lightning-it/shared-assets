@@ -1,0 +1,168 @@
+# yamllint disable rule:truthy rule:line-length
+---
+name: Sync shared assets into Wunder EE containers
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "default/**"
+      - "container/**"
+      - ".github/workflows/sync-ee-containers.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sync-containers:
+    name: Sync shared assets → ${{ matrix.repo }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - container-ee-wunder-ansible-ubi9
+          - container-wunder-devtools-ee
+
+    steps:
+      # --------------------------------------------------------------------
+      # 1) Checkout shared-assets (this repo)
+      # --------------------------------------------------------------------
+      - name: Checkout shared-assets
+        uses: actions/checkout@v6
+        with:
+          path: shared-assets
+          persist-credentials: false
+
+      # --------------------------------------------------------------------
+      # 2) Checkout target container repo with bot token
+      # --------------------------------------------------------------------
+      - name: Checkout target container repo
+        uses: actions/checkout@v6
+        with:
+          repository: lightning-it/${{ matrix.repo }}
+          path: repo
+          token: ${{ secrets.SYNC_BOT_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure git author in target repo
+        working-directory: repo
+        run: |
+          git config user.name "litreleasebot"
+          git config user.email "litreleasebot@users.noreply.github.com"
+
+      # --------------------------------------------------------------------
+      # 3) Sync container-specific assets
+      #    (linting, renovate, devtools scripts, container CI workflows)
+      # --------------------------------------------------------------------
+      - name: Sync container assets
+        working-directory: repo
+        run: |
+          set -e
+
+          SRC_CONTAINER="../shared-assets/container/base"
+          SRC_DEFAULT="../shared-assets/default"
+
+          # ------------------------------------------------------------------
+          # Copy all shared top-level files if present
+          # ------------------------------------------------------------------
+          for f in \
+            ".yamllint" \
+            "CODE_OF_CONDUCT.md" \
+            "CONTRIBUTING.md" \
+            "SECURITY.md" \
+            ".gitignore"
+          do
+            if [ -f "${SRC_CONTAINER}/${f}" ]; then
+              echo "Syncing ${f} from shared-assets/container/base..."
+              cp -f "${SRC_CONTAINER}/${f}" "./${f}"
+            fi
+          done
+
+          # Ensure wunder-devtools-ee.sh from default/scripts is present (optional for container repos)
+          if [ -f "${SRC_DEFAULT}/scripts/wunder-devtools-ee.sh" ]; then
+            echo "Syncing default/scripts/wunder-devtools-ee.sh into repo/scripts/..."
+            mkdir -p ./scripts
+            cp -f "${SRC_DEFAULT}/scripts/wunder-devtools-ee.sh" ./scripts/
+          fi
+
+          # ------------------------------------------------------------------
+          # Container devtools scripts (if you keep shared helper scripts here)
+          # ------------------------------------------------------------------
+          if [ -d "${SRC_CONTAINER}/scripts" ]; then
+            echo "Syncing container scripts from shared-assets/container/base (with --delete)..."
+            mkdir -p ./scripts
+            rsync -av --delete "${SRC_CONTAINER}/scripts/" ./scripts/
+          fi
+
+          # ------------------------------------------------------------------
+          # CI workflows for containers (build, scan, publish)
+          # ------------------------------------------------------------------
+          if [ -d "${SRC_CONTAINER}/.github/workflows" ]; then
+            echo "Syncing container CI workflows from shared-assets/container/base (with --delete)..."
+            mkdir -p .github/workflows
+            rsync -av --delete "${SRC_CONTAINER}/.github/workflows/" .github/workflows/
+          fi
+
+          # Additional shared workflows (e.g., release) live outside base/.
+          EXTRA_WF="../shared-assets/container/.github/workflows"
+          if [ -d "${EXTRA_WF}" ]; then
+            echo "Syncing additional container workflows from shared-assets/container/.github/workflows..."
+            mkdir -p .github/workflows
+            rsync -av "${EXTRA_WF}/" .github/workflows/
+          fi
+
+      # --------------------------------------------------------------------
+      # 4) Detect changes
+      # --------------------------------------------------------------------
+      - name: Detect changes
+        id: diff
+        working-directory: repo
+        run: |
+          if git status --porcelain | grep .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --------------------------------------------------------------------
+      # 5) Avoid duplicate Authorization headers (some actions set extraheader)
+      # --------------------------------------------------------------------
+      - name: Remove duplicate GitHub auth header
+        if: steps.diff.outputs.changed == 'true'
+        working-directory: repo
+        run: |
+          git config --global --unset-all http.https://github.com/.extraheader || true
+          git config --local --unset-all http.https://github.com/.extraheader || true
+
+      # --------------------------------------------------------------------
+      # 6) Create or update PR in target repo (one per sync branch)
+      # --------------------------------------------------------------------
+      - name: Create pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.SYNC_BOT_TOKEN }}
+          path: repo
+          commit-message: >-
+            chore: sync shared assets from lightning-it/shared-assets
+          branch: >-
+            chore/sync-shared-assets-${{ matrix.repo }}
+          title: "chore: sync shared assets"
+          body: |
+            Automated sync from
+            [lightning-it/shared-assets](https://github.com/lightning-it/shared-assets).
+
+            This PR updates:
+            - container tooling (linting/renovate/common docs)
+            - shared helper scripts (if applicable)
+            - container CI workflows (build/publish)
+
+            Please review and merge to keep this container repository aligned
+            with the central templates.
+          labels: "chore,shared-assets"
+          delete-branch: false
