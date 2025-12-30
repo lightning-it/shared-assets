@@ -55,26 +55,38 @@ jobs:
           git config user.name "litreleasebot"
           git config user.email "litreleasebot@users.noreply.github.com"
 
-      # --------------------------------------------------------------------
-      # 3) Sync container-specific assets
-      #    Copy ALL files from shared-assets/container/base into the repo root.
-      #    Workflows from container/.github/workflows are synced additionally.
-      # --------------------------------------------------------------------
       - name: Sync container assets
         working-directory: repo
         run: |
-          set -euo pipefail
+          set -e
 
-          SRC_CONTAINER_BASE="../shared-assets/container/base"
+          SRC_CONTAINER="../shared-assets/container/base"
           SRC_DEFAULT="../shared-assets/default"
 
-          if [ ! -d "${SRC_CONTAINER_BASE}" ]; then
-            echo "ERROR: Source directory not found: ${SRC_CONTAINER_BASE}" >&2
-            exit 1
-          fi
+          # Copy shared container files from container/base (allow-list)
+          for f in \
+            ".gitignore" \
+            "pre-commit-config.yaml" \
+            ".releaserc" \
+            ".yamllint" \
+            "CODE_OF_CONDUCT.md" \
+            "CONTRIBUTING.md"
+          do
+            if [ -f "${SRC_CONTAINER}/${f}" ]; then
+              echo "Syncing ${f} from shared-assets/container/base..."
+              cp -f "${SRC_CONTAINER}/${f}" "./${f}"
+            fi
+          done
 
-          echo "Syncing ALL files from ${SRC_CONTAINER_BASE}/ into repo root (with --delete)..."
-          rsync -av --delete "${SRC_CONTAINER_BASE}/" ./
+          # Copy shared default files (allow-list)
+          for f in \
+            "LICENSE"
+          do
+            if [ -f "${SRC_DEFAULT}/${f}" ]; then
+              echo "Syncing ${f} from shared-assets/default..."
+              cp -f "${SRC_DEFAULT}/${f}" "./${f}"
+            fi
+          done
 
           # Ensure wunder-devtools-ee.sh from default/scripts is present (optional for container repos)
           if [ -f "${SRC_DEFAULT}/scripts/wunder-devtools-ee.sh" ]; then
@@ -83,10 +95,24 @@ jobs:
             cp -f "${SRC_DEFAULT}/scripts/wunder-devtools-ee.sh" ./scripts/
           fi
 
+          # Container devtools scripts
+          if [ -d "${SRC_CONTAINER}/scripts" ]; then
+            echo "Syncing container scripts from shared-assets/container/base (with --delete)..."
+            mkdir -p ./scripts
+            rsync -av --delete "${SRC_CONTAINER}/scripts/" ./scripts/
+          fi
+
+          # CI workflows for containers
+          if [ -d "${SRC_CONTAINER}/.github/workflows" ]; then
+            echo "Syncing container CI workflows from shared-assets/container/base (with --delete)..."
+            mkdir -p .github/workflows
+            rsync -av --delete "${SRC_CONTAINER}/.github/workflows/" .github/workflows/
+          fi
+
           # Additional shared workflows (e.g., release) live outside base/.
           EXTRA_WF="../shared-assets/container/.github/workflows"
           if [ -d "${EXTRA_WF}" ]; then
-            echo "Syncing additional container workflows from ${EXTRA_WF}/ ..."
+            echo "Syncing additional container workflows from shared-assets/container/.github/workflows..."
             mkdir -p .github/workflows
             rsync -av "${EXTRA_WF}/" .github/workflows/
           fi
