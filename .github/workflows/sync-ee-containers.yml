@@ -57,31 +57,24 @@ jobs:
 
       # --------------------------------------------------------------------
       # 3) Sync container-specific assets
-      #    (linting, renovate, devtools scripts, container CI workflows)
+      #    Copy ALL files from shared-assets/container/base into the repo root.
+      #    Workflows from container/.github/workflows are synced additionally.
       # --------------------------------------------------------------------
       - name: Sync container assets
         working-directory: repo
         run: |
-          set -e
+          set -euo pipefail
 
-          SRC_CONTAINER="../shared-assets/container/base"
+          SRC_CONTAINER_BASE="../shared-assets/container/base"
           SRC_DEFAULT="../shared-assets/default"
 
-          # ------------------------------------------------------------------
-          # Copy all shared top-level files if present
-          # ------------------------------------------------------------------
-          for f in \
-            ".yamllint" \
-            "CODE_OF_CONDUCT.md" \
-            "CONTRIBUTING.md" \
-            "SECURITY.md" \
-            ".gitignore"
-          do
-            if [ -f "${SRC_CONTAINER}/${f}" ]; then
-              echo "Syncing ${f} from shared-assets/container/base..."
-              cp -f "${SRC_CONTAINER}/${f}" "./${f}"
-            fi
-          done
+          if [ ! -d "${SRC_CONTAINER_BASE}" ]; then
+            echo "ERROR: Source directory not found: ${SRC_CONTAINER_BASE}" >&2
+            exit 1
+          fi
+
+          echo "Syncing ALL files from ${SRC_CONTAINER_BASE}/ into repo root (with --delete)..."
+          rsync -av --delete "${SRC_CONTAINER_BASE}/" ./
 
           # Ensure wunder-devtools-ee.sh from default/scripts is present (optional for container repos)
           if [ -f "${SRC_DEFAULT}/scripts/wunder-devtools-ee.sh" ]; then
@@ -90,28 +83,10 @@ jobs:
             cp -f "${SRC_DEFAULT}/scripts/wunder-devtools-ee.sh" ./scripts/
           fi
 
-          # ------------------------------------------------------------------
-          # Container devtools scripts (if you keep shared helper scripts here)
-          # ------------------------------------------------------------------
-          if [ -d "${SRC_CONTAINER}/scripts" ]; then
-            echo "Syncing container scripts from shared-assets/container/base (with --delete)..."
-            mkdir -p ./scripts
-            rsync -av --delete "${SRC_CONTAINER}/scripts/" ./scripts/
-          fi
-
-          # ------------------------------------------------------------------
-          # CI workflows for containers (build, scan, publish)
-          # ------------------------------------------------------------------
-          if [ -d "${SRC_CONTAINER}/.github/workflows" ]; then
-            echo "Syncing container CI workflows from shared-assets/container/base (with --delete)..."
-            mkdir -p .github/workflows
-            rsync -av --delete "${SRC_CONTAINER}/.github/workflows/" .github/workflows/
-          fi
-
           # Additional shared workflows (e.g., release) live outside base/.
           EXTRA_WF="../shared-assets/container/.github/workflows"
           if [ -d "${EXTRA_WF}" ]; then
-            echo "Syncing additional container workflows from shared-assets/container/.github/workflows..."
+            echo "Syncing additional container workflows from ${EXTRA_WF}/ ..."
             mkdir -p .github/workflows
             rsync -av "${EXTRA_WF}/" .github/workflows/
           fi
