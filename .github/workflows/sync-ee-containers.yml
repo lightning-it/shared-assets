@@ -55,6 +55,11 @@ jobs:
           git config user.name "litreleasebot"
           git config user.email "litreleasebot@users.noreply.github.com"
 
+      # --------------------------------------------------------------------
+      # 3) Sync container-specific assets
+      #    Copy ALL files from shared-assets/container/base into the repo root.
+      #    Workflows from container/.github/workflows are synced additionally.
+      # --------------------------------------------------------------------
       - name: Sync container assets
         working-directory: repo
         run: |
