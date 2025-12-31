@@ -74,7 +74,6 @@ jobs:
             ".pre-commit-config.yaml" \
             ".releaserc" \
             ".yamllint" \
-            "CODE_OF_CONDUCT.md" \
             "CONTRIBUTING.md"
           do
             if [ -f "${SRC_CONTAINER}/${f}" ]; then
@@ -85,7 +84,8 @@ jobs:
 
           # Copy shared default files (allow-list)
           for f in \
-            "LICENSE"
+            "LICENSE" \
+            "CODE_OF_CONDUCT.md"
           do
             if [ -f "${SRC_DEFAULT}/${f}" ]; then
               echo "Syncing ${f} from shared-assets/default..."
