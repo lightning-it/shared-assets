@@ -79,15 +79,27 @@ jobs:
             "ansible.cfg" \
             "renovate.json" \
             "AGENT.md" \
-            "CODE_OF_CONDUCT.md" \
             "CONTRIBUTING.md" \
-            "SECURITY.md" \
             ".releaserc" \
+            "LICENSE" \
             ".gitignore"
           do
             if [ -f "${SRC_AC}/${f}" ]; then
               echo "Syncing ${f} from shared-assets/ansible-collection..."
               cp -f "${SRC_AC}/${f}" "./${f}"
+            fi
+          done
+
+          # ------------------------------------------------------------------
+          # Copy default assets (org-wide templates)
+          # ------------------------------------------------------------------
+          for f in \
+            "CODE_OF_CONDUCT.md" \
+            "SECURITY.md"
+          do
+            if [ -f "${SRC_DEFAULT}/${f}" ]; then
+              echo "Syncing ${f} from shared-assets/default..."
+              cp -f "${SRC_DEFAULT}/${f}" "./${f}"
             fi
           done
 
@@ -255,6 +267,7 @@ jobs:
 
             This PR updates:
             - Ansible collection tooling (ansible.cfg, .ansible-lint, pre-commit)
+            - default policies (CODE_OF_CONDUCT.md, CONTRIBUTING.md)
             - shared devtools scripts (wunder-devtools-ee helpers)
             - collection CI workflows
 
