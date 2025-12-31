@@ -71,7 +71,7 @@ jobs:
           # Copy shared container files from container/base (allow-list)
           for f in \
             ".gitignore" \
-            "pre-commit-config.yaml" \
+            ".pre-commit-config.yaml" \
             ".releaserc" \
             ".yamllint" \
             "CODE_OF_CONDUCT.md" \
