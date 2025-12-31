@@ -61,6 +61,19 @@ jobs:
             fi
           done
 
+      - name: Sync default shared assets
+        working-directory: repo
+        run: |
+          set -e
+          SRC_DEFAULT="../shared-assets/default"
+
+          for f in "CODE_OF_CONDUCT.md"; do
+            if [ -f "${SRC_DEFAULT}/${f}" ]; then
+              echo "Syncing ${f} from shared-assets/default..."
+              cp -f "${SRC_DEFAULT}/${f}" "./${f}"
+            fi
+          done
+
       - name: Detect changes
         id: diff
         working-directory: repo
@@ -87,6 +100,7 @@ jobs:
 
             This PR updates:
             - inventory base assets (.gitignore, ansible.cfg, LICENSE)
+            - default assets (CODE_OF_CONDUCT.md)
 
             Please review and merge to keep this inventory aligned with the
             central templates.
