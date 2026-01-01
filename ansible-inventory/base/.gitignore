@@ -1,8 +1,42 @@
+# Ansible
 *.retry
 *.log
-.vscode/
-.idea/
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Ansible logs
+roles/ansible-navigator.log
+
+# Vault / Secrets (be careful: don't accidentally ignore legitimate vars files)
+*vault*
+*.vault
+.vault_pass
+.vault-password
+vault-password.txt
+vault_pass.txt
+
+# Keys / certs
 *.pem
 *.key
-*vault*
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# Sensitive inventory artifacts
+*.orig
+*.cache
+.cache/
+ansible.log
+inventory.log
+
+# Python
 __pycache__/
+*.pyc
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
