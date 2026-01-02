@@ -17,6 +17,12 @@
       "groupName": "ansible-core (2.18.x only)"
     },
     {
+      "description": "Pin ansible-lint to 6.22.x (keeps templates compatible with current tooling)",
+      "matchPackageNames": ["ansible-lint"],
+      "allowedVersions": "/^6\\.22\\./",
+      "groupName": "ansible-lint (6.22.x only)"
+    },
+    {
       "matchManagers": ["npm"],
       "groupName": "npm dependencies"
     },
@@ -61,6 +67,7 @@
       "datasourceTemplate": "terraform-version",
       "depNameTemplate": "hashicorp/terraform"
     },
+
     {
       "description": "ANSIBLE_CORE_VERSION in workflow env",
       "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
@@ -89,6 +96,7 @@
       "packageNameTemplate": "python",
       "versioningTemplate": "pep440"
     },
+
     {
       "description": "wunder-devtools-ee image tag in scripts and workflows",
       "fileMatch": [
