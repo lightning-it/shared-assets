@@ -1,45 +1,29 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "dependencyDashboard": true,
   "timezone": "UTC",
-  "schedule": [
-    "before 6am on monday"
-  ],
-  "labels": [
-    "dependencies",
-    "renovate",
-    "shared-assets"
-  ],
-  "npm": {
-    "enabled": true
-  },
-  "github-actions": {
-    "enabled": true
-  },
+  "schedule": [],
+  "labels": ["dependencies", "renovate", "shared-assets"],
+
+  "npm": { "enabled": true },
+  "github-actions": { "enabled": true },
+
   "packageRules": [
     {
       "description": "Pin ansible-core to 2.18.x across workflow templates",
-      "matchPackageNames": [
-        "ansible-core"
-      ],
+      "matchPackageNames": ["ansible-core"],
       "allowedVersions": "/^2\\.18\\./",
       "groupName": "ansible-core (2.18.x only)"
     },
     {
-      "matchManagers": [
-        "npm"
-      ],
+      "matchManagers": ["npm"],
       "groupName": "npm dependencies"
     },
     {
       "groupName": "semantic-release toolchain",
       "description": "Keep semantic-release and its plugins in sync across all template repos",
-      "matchManagers": [
-        "npm"
-      ],
+      "matchManagers": ["npm"],
       "matchPackageNames": [
         "semantic-release",
         "@semantic-release/changelog",
@@ -54,51 +38,32 @@
     },
     {
       "description": "Highlight major updates for semantic-release itself",
-      "matchManagers": [
-        "npm"
-      ],
-      "matchPackageNames": [
-        "semantic-release"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "labels": [
-        "dependencies",
-        "renovate",
-        "breaking-release-tools"
-      ]
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["semantic-release"],
+      "matchUpdateTypes": ["major"],
+      "labels": ["dependencies", "renovate", "breaking-release-tools"]
     }
   ],
+
   "regexManagers": [
     {
       "description": "Node.js versions in workflow files",
-      "fileMatch": [
-        "^\\.github/workflows/.*\\.ya?ml$"
-      ],
-      "matchStrings": [
-        "node-version:\\s*['\"]?(?<currentValue>[0-9.]+)['\"]?"
-      ],
+      "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": ["node-version:\\s*['\"]?(?<currentValue>[0-9.]+)['\"]?"],
       "datasourceTemplate": "node",
       "depNameTemplate": "node",
       "versioningTemplate": "node"
     },
     {
       "description": "Terraform versions in workflow files",
-      "fileMatch": [
-        "^\\.github/workflows/.*\\.ya?ml$"
-      ],
-      "matchStrings": [
-        "terraform_version[:=]\\s*[\"']?(?<currentValue>[0-9.]+)[\"']?"
-      ],
+      "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": ["TERRAFORM_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""],
       "datasourceTemplate": "terraform-version",
       "depNameTemplate": "hashicorp/terraform"
     },
     {
       "description": "ANSIBLE_CORE_VERSION in workflow env",
-      "fileMatch": [
-        "^\\.github/workflows/.*\\.ya?ml$"
-      ],
+      "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
       "matchStrings": [
         "ANSIBLE_CORE_VERSION:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
       ],
@@ -107,75 +72,52 @@
       "versioningTemplate": "pep440"
     },
     {
-      "description": "ansible-core pins in workflows and requirements",
-      "fileMatch": [
-        "^\\.github/workflows/.*\\.ya?ml$",
-        "^requirements\\.txt$"
-      ],
+      "description": "ANSIBLE_LINT_VERSION in workflow env",
+      "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
       "matchStrings": [
-        "ansible-core==(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "pypi",
-      "packageNameTemplate": "ansible-core",
-      "versioningTemplate": "pep440"
-    },
-    {
-      "description": "ansible-lint pins in workflows and requirements",
-      "fileMatch": [
-        "^\\.github/workflows/.*\\.ya?ml$",
-        "^requirements\\.txt$"
-      ],
-      "matchStrings": [
-        "ansible-lint==(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
+        "ANSIBLE_LINT_VERSION:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
       ],
       "datasourceTemplate": "pypi",
       "packageNameTemplate": "ansible-lint",
       "versioningTemplate": "pep440"
     },
     {
+      "description": "PYTHON_VERSION in workflow env",
+      "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": ["PYTHON_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""],
+      "datasourceTemplate": "pypi",
+      "packageNameTemplate": "python",
+      "versioningTemplate": "pep440"
+    },
+    {
       "description": "wunder-devtools-ee image tag in scripts and workflows",
       "fileMatch": [
-        "^scripts/.*\\.sh$",
-        "^\\.github/workflows/.*\\.ya?ml$"
+        "(^|.*/)scripts/.*\\.sh$",
+        "(^|.*/)\\.github/workflows/.*\\.ya?ml$",
+        "(^|.*/)\\.pre-commit-config\\.ya?ml$"
       ],
-      "matchStrings": [
-        "ghcr\\.io/lightning-it/wunder-devtools-ee:v(?<currentValue>[0-9.]+)"
-      ],
+      "matchStrings": ["ghcr\\.io/lightning-it/wunder-devtools-ee:v(?<currentValue>[0-9.]+)"],
       "datasourceTemplate": "docker",
       "packageNameTemplate": "ghcr.io/lightning-it/wunder-devtools-ee"
     },
     {
       "description": "actionlint docker image in pre-commit and scripts",
-      "fileMatch": [
-        "^\\.pre-commit-config\\.ya?ml$",
-        "^scripts/.*\\.sh$"
-      ],
-      "matchStrings": [
-        "docker\\.io/rhysd/actionlint:(?<currentValue>v?[0-9.]+)"
-      ],
+      "fileMatch": ["(^|.*/)\\.pre-commit-config\\.ya?ml$", "(^|.*/)scripts/.*\\.sh$"],
+      "matchStrings": ["docker\\.io/rhysd/actionlint:(?<currentValue>v?[0-9.]+)"],
       "datasourceTemplate": "docker",
       "packageNameTemplate": "rhysd/actionlint"
     },
     {
       "description": "Renovate docker image in pre-commit and scripts",
-      "fileMatch": [
-        "^\\.pre-commit-config\\.ya?ml$",
-        "^scripts/.*\\.sh$"
-      ],
-      "matchStrings": [
-        "renovate/renovate:(?<currentValue>[0-9.]+)"
-      ],
+      "fileMatch": ["(^|.*/)\\.pre-commit-config\\.ya?ml$", "(^|.*/)scripts/.*\\.sh$"],
+      "matchStrings": ["renovate/renovate:(?<currentValue>[0-9.]+)"],
       "datasourceTemplate": "docker",
       "packageNameTemplate": "renovate/renovate"
     },
     {
       "description": "Rocky Linux images in Molecule files",
-      "fileMatch": [
-        "^molecule/.*/molecule\\.ya?ml$"
-      ],
-      "matchStrings": [
-        "quay\\.io/rockylinux/rockylinux:(?<currentValue>[0-9.]+)"
-      ],
+      "fileMatch": ["(^|.*/)molecule/.*/molecule\\.ya?ml$"],
+      "matchStrings": ["quay\\.io/rockylinux/rockylinux:(?<currentValue>[0-9.]+)"],
       "datasourceTemplate": "docker",
       "packageNameTemplate": "quay.io/rockylinux/rockylinux"
     }
