@@ -23,6 +23,12 @@
       "groupName": "ansible-lint (6.22.x only)"
     },
     {
+      "description": "Pin Python to 3.11.x in workflow templates",
+      "matchPackageNames": ["python"],
+      "allowedVersions": "/^3\\.11\\./",
+      "groupName": "python (3.11.x only)"
+    },
+    {
       "matchManagers": ["npm"],
       "groupName": "npm dependencies"
     },
@@ -70,7 +76,7 @@
 
     {
       "description": "ANSIBLE_CORE_VERSION in workflow env",
-      "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
+      "fileMatch": ["(^|.*/)ansible-collection/base/\\.github/workflows/.*\\.ya?ml$"],
       "matchStrings": [
         "ANSIBLE_CORE_VERSION:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
       ],
@@ -80,7 +86,7 @@
     },
     {
       "description": "ANSIBLE_LINT_VERSION in workflow env",
-      "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
+      "fileMatch": ["(^|.*/)ansible-collection/base/\\.github/workflows/.*\\.ya?ml$"],
       "matchStrings": [
         "ANSIBLE_LINT_VERSION:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
       ],
@@ -88,13 +94,14 @@
       "packageNameTemplate": "ansible-lint",
       "versioningTemplate": "pep440"
     },
+
     {
       "description": "PYTHON_VERSION in workflow env",
-      "fileMatch": ["(^|.*/)\\.github/workflows/.*\\.ya?ml$"],
+      "fileMatch": ["(^|.*/)ansible-collection/base/\\.github/workflows/.*\\.ya?ml$"],
       "matchStrings": ["PYTHON_VERSION:\\s*\"(?<currentValue>[0-9.]+)\""],
-      "datasourceTemplate": "pypi",
-      "packageNameTemplate": "python",
-      "versioningTemplate": "pep440"
+      "datasourceTemplate": "python-version",
+      "depNameTemplate": "python",
+      "versioningTemplate": "python"
     },
 
     {
