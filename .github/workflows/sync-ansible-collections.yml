@@ -77,13 +77,19 @@ jobs:
           for f in \
             ".ansible-lint" \
             "ansible.cfg" \
-            "renovate.json" \
+            "renovate.base.json" \
             "AGENT.md" \
             "CONTRIBUTING.md" \
             ".releaserc" \
             "LICENSE" \
             ".gitignore"
           do
+            # Skip renovate.base.json for foundational only
+            if [ "${{ matrix.repo }}" = "ansible-collection-foundational" ] && [ "$f" = "renovate.base.json" ]; then
+              echo "Skipping renovate.base.json for ansible-collection-foundational"
+              continue
+            fi
+
             if [ -f "${SRC_AC}/${f}" ]; then
               echo "Syncing ${f} from shared-assets/ansible-collection..."
               cp -f "${SRC_AC}/${f}" "./${f}"
