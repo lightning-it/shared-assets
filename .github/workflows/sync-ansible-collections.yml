@@ -81,6 +81,7 @@ jobs:
             "AGENT.md" \
             "CONTRIBUTING.md" \
             ".releaserc" \
+            ".yamllint" \
             "LICENSE" \
             ".gitignore"
           do
