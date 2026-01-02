@@ -13,15 +13,21 @@
     "renovate",
     "shared-assets"
   ],
-
   "npm": {
     "enabled": true
   },
   "github-actions": {
     "enabled": true
   },
-
   "packageRules": [
+    {
+      "description": "Pin ansible-core to 2.18.x across workflow templates",
+      "matchPackageNames": [
+        "ansible-core"
+      ],
+      "allowedVersions": "/^2\\.18\\./",
+      "groupName": "ansible-core (2.18.x only)"
+    },
     {
       "matchManagers": [
         "npm"
@@ -64,7 +70,6 @@
       ]
     }
   ],
-
   "regexManagers": [
     {
       "description": "Node.js versions in workflow files",
@@ -90,6 +95,18 @@
       "depNameTemplate": "hashicorp/terraform"
     },
     {
+      "description": "ANSIBLE_CORE_VERSION in workflow env",
+      "fileMatch": [
+        "^\\.github/workflows/.*\\.ya?ml$"
+      ],
+      "matchStrings": [
+        "ANSIBLE_CORE_VERSION:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
+      ],
+      "datasourceTemplate": "pypi",
+      "packageNameTemplate": "ansible-core",
+      "versioningTemplate": "pep440"
+    },
+    {
       "description": "ansible-core pins in workflows and requirements",
       "fileMatch": [
         "^\\.github/workflows/.*\\.ya?ml$",
@@ -99,7 +116,8 @@
         "ansible-core==(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
       ],
       "datasourceTemplate": "pypi",
-      "packageNameTemplate": "ansible-core"
+      "packageNameTemplate": "ansible-core",
+      "versioningTemplate": "pep440"
     },
     {
       "description": "ansible-lint pins in workflows and requirements",
@@ -111,7 +129,8 @@
         "ansible-lint==(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
       ],
       "datasourceTemplate": "pypi",
-      "packageNameTemplate": "ansible-lint"
+      "packageNameTemplate": "ansible-lint",
+      "versioningTemplate": "pep440"
     },
     {
       "description": "wunder-devtools-ee image tag in scripts and workflows",
