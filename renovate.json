@@ -113,7 +113,7 @@
       ],
       "matchStrings": ["ghcr\\.io/lightning-it/wunder-devtools-ee:v(?<currentValue>[0-9.]+)"],
       "datasourceTemplate": "docker",
-      "packageNameTemplate": "ghcr.io/lightning-it/wunder-devtools-ee"
+      "packageNameTemplate": "quay.io/l-it/wunder-devtools-ee"
     },
     {
       "description": "actionlint docker image in pre-commit and scripts",
