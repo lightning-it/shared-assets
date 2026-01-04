@@ -129,7 +129,7 @@ jobs:
 
           raw_block = shared_cfg.read_text().strip("\n")
 
-          # Drop a leading document start + top-level repos: if present
+          # Drop leading doc start + top-level repos: if present
           lines = raw_block.splitlines()
           if lines and lines[0].strip() == "---":
               lines = lines[1:]
@@ -139,49 +139,43 @@ jobs:
               lines = [ln[2:] if ln.startswith("  ") else ln for ln in lines]
           shared_block = "\n".join(lines).strip("\n")
 
-          if repo_cfg.is_file():
-              text = repo_cfg.read_text()
-          else:
-              # Start from empty; we’ll add '---' and 'repos:' below if missing
-              text = ""
+          # Load existing config (if any)
+          text = repo_cfg.read_text() if repo_cfg.is_file() else ""
 
-          possible_begins = [base_begin, f"  {base_begin}"]
-          possible_ends = [base_end, f"  {base_end}"]
-
-          begin_in_text = next((b for b in possible_begins if b in text), None)
-          end_in_text = next((e for e in possible_ends if e in text), None)
-
-          # Always ensure a document start and top-level repos key exist
+          # Ensure doc start and top-level repos key exist
           if not text.lstrip().startswith("---"):
               text = "---\n" + text.lstrip()
           if not any(line.lstrip().startswith("repos:") for line in text.splitlines()):
               text = text.rstrip() + "\nrepos:\n"
 
-          # Always indent markers under repos: for valid YAML
+          # Remove any existing shared block regardless of indentation
+          import re
+
+          pattern = r"[ \t]*# >>> BEGIN shared-assets pre-commit.*?# <<< END shared-assets pre-commit[^\n]*\n?"
+          text = re.sub(pattern, "", text, flags=re.DOTALL)
+
+          # Build normalized shared block (two-space indent under repos)
           target_begin = f"  {base_begin}"
           target_end = f"  {base_end}"
+          indented_block = "\n".join(f"  {line}" if line.strip() else "  " for line in shared_block.splitlines())
+          normalized_block = "\n".join([target_begin, indented_block, target_end]).rstrip("\n") + "\n"
 
-          indent = target_begin.split("#")[0]
-          def _indent_line(line: str) -> str:
-              return f"{indent}{line}" if line.strip() else ""
+          # Insert block immediately after the first repos: line
+          lines = text.splitlines()
+          new_lines = []
+          inserted = False
+          for idx, line in enumerate(lines):
+              new_lines.append(line)
+              if not inserted and line.lstrip().startswith("repos:"):
+                  new_lines.append(normalized_block.rstrip("\n"))
+                  inserted = True
 
-          indented_block = "\n".join(_indent_line(line) for line in shared_block.splitlines())
+          if not inserted:
+              new_lines.append("repos:")
+              new_lines.append(normalized_block.rstrip("\n"))
 
-          if begin_in_text is None or end_in_text is None:
-              print("WARN: Markers for shared pre-commit block not found; creating them at end of file.")
-              new = text.rstrip() + "\n" + target_begin + "\n" + indented_block + "\n" + target_end + "\n"
-          else:
-              start = text.index(begin_in_text)
-              stop = text.index(end_in_text) + len(end_in_text)
-              replacement = target_begin + "\n" + indented_block + "\n" + target_end
-              new = text[:start] + replacement + text[stop:]
-
-          # Ensure a YAML document start exists once at the top
-          stripped = new.lstrip()
-          if not stripped.startswith("---"):
-              new = "---\n" + stripped
-
-          repo_cfg.write_text(new)
+          new_text = "\n".join(new_lines).rstrip() + "\n"
+          repo_cfg.write_text(new_text)
           PY
 
           # ------------------------------------------------------------------
