@@ -137,6 +137,9 @@ jobs:
               lines = lines[1:]
               # Drop one level of indentation from the shared block
               lines = [ln[2:] if ln.startswith("  ") else ln for ln in lines]
+
+          # Drop any markers from the shared template (if present) to avoid duplicates
+          lines = [ln for ln in lines if ln.strip() not in (base_begin, base_end)]
           shared_block = "\n".join(lines).strip("\n")
 
           # Load existing config (if any)
@@ -167,29 +170,47 @@ jobs:
           # Build normalized shared block (two-space indent under repos)
           target_begin = f"  {base_begin}"
           target_end = f"  {base_end}"
-          indented_block = "\n".join(f"  {line}" if line.strip() else "  " for line in shared_block.splitlines())
+
+          # IMPORTANT: keep blank lines truly blank (no spaces) to avoid yaml[trailing-spaces]
+          indented_lines = []
+          for ln in shared_block.splitlines():
+              if ln.strip():
+                  indented_lines.append(f"  {ln.rstrip()}")
+              else:
+                  indented_lines.append("")
+          indented_block = "\n".join(indented_lines).rstrip("\n")
+
           normalized_block = "\n".join([target_begin, indented_block, target_end]).rstrip("\n") + "\n"
 
           # Insert block immediately after the first repos: line
-          lines = text.splitlines()
-          new_lines = []
+          out_lines = []
           inserted = False
-          for line in lines:
-              new_lines.append(line)
+          for line in text.splitlines():
+              out_lines.append(line.rstrip())
               if not inserted and line.lstrip().startswith("repos:"):
-                  new_lines.append(normalized_block.rstrip("\n"))
+                  out_lines.append(normalized_block.rstrip("\n"))
                   inserted = True
 
           if not inserted:
-              new_lines.append("repos:")
-              new_lines.append(normalized_block.rstrip("\n"))
+              out_lines.append("repos:")
+              out_lines.append(normalized_block.rstrip("\n"))
 
-          new_text = "\n".join(new_lines).rstrip() + "\n"
+          new_text = "\n".join(out_lines).rstrip() + "\n"
 
-          # Safety net: normalize any stray marker lines to 2-space indentation
-          new_text = new_text.replace(f"\n{base_begin}\n", f"\n  {base_begin}\n")
-          new_text = new_text.replace(f"\n{base_end}\n", f"\n  {base_end}\n")
+          # Final normalization:
+          # - remove trailing whitespace on every line
+          # - force markers to be exactly 2-space indented
+          final = []
+          for ln in new_text.splitlines():
+              s = ln.strip()
+              if s == base_begin:
+                  final.append(f"  {base_begin}")
+              elif s == base_end:
+                  final.append(f"  {base_end}")
+              else:
+                  final.append(ln.rstrip())
 
+          new_text = "\n".join(final).rstrip() + "\n"
           repo_cfg.write_text(new_text)
           PY
 
