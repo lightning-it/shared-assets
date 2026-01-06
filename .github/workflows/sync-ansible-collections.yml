@@ -145,14 +145,24 @@ jobs:
           # Ensure doc start and top-level repos key exist
           if not text.lstrip().startswith("---"):
               text = "---\n" + text.lstrip()
-          if not any(line.lstrip().startswith("repos:") for line in text.splitlines()):
-              text = text.rstrip() + "\nrepos:\n"
+          lines_existing = text.splitlines()
+          if not any(line.lstrip().startswith("repos:") for line in lines_existing):
+              lines_existing.append("repos:")
+              text = "\n".join(lines_existing) + "\n"
 
-          # Remove any existing shared block regardless of indentation
-          import re
-
-          pattern = r"[ \t]*# >>> BEGIN shared-assets pre-commit.*?# <<< END shared-assets pre-commit[^\n]*\n?"
-          text = re.sub(pattern, "", text, flags=re.DOTALL)
+          # Strip any existing shared block regardless of indentation/newlines
+          cleaned = []
+          skipping = False
+          for line in text.splitlines():
+              if line.strip() == base_begin:
+                  skipping = True
+                  continue
+              if line.strip() == base_end:
+                  skipping = False
+                  continue
+              if not skipping:
+                  cleaned.append(line)
+          text = "\n".join(cleaned).strip("\n") + "\n"
 
           # Build normalized shared block (two-space indent under repos)
           target_begin = f"  {base_begin}"
@@ -164,7 +174,7 @@ jobs:
           lines = text.splitlines()
           new_lines = []
           inserted = False
-          for idx, line in enumerate(lines):
+          for line in lines:
               new_lines.append(line)
               if not inserted and line.lstrip().startswith("repos:"):
                   new_lines.append(normalized_block.rstrip("\n"))
@@ -175,6 +185,11 @@ jobs:
               new_lines.append(normalized_block.rstrip("\n"))
 
           new_text = "\n".join(new_lines).rstrip() + "\n"
+
+          # Safety net: normalize any stray marker lines to 2-space indentation
+          new_text = new_text.replace(f"\n{base_begin}\n", f"\n  {base_begin}\n")
+          new_text = new_text.replace(f"\n{base_end}\n", f"\n  {base_end}\n")
+
           repo_cfg.write_text(new_text)
           PY
 
